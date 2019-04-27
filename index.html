@@ -2153,6 +2153,10 @@
         &nbsp;<span class="title"></span><span class="timing badge font-weight-light" style="display:none"></span>
       </a>`
 
+      var filterOption =
+      `<option class="filter-option">
+      </option>`
+
       function createTableHead(headings) {
         const tr = $('<tr></tr>')
         tr.append($('<th class="text-center">#</th>'))
@@ -2228,6 +2232,11 @@
             button.attr('aria-controls', `region-${region}-${query.id}`);
             button.find('.title').text(query.title);
             $(`#region-${region}`).append([button, content]);
+            let option= $(filterOption);
+            option.attr('id', `opt-region-${region}-${query.id}`);
+            option.attr('data-target', `#btn-region-${region}-${query.id}`);
+            option.text(query.title);
+            $(`#filter-select-region-${region}`).append(option);
             const showCounter = function(text, timing) {
               button.find('.counter').text(text)
               button.find('.timing').html(timing.toString().length < 3 ? `&mdash; ${timing}ms` : `&mdash; ${timing/1000}s`)
@@ -2290,12 +2299,13 @@
           window.AWS_REGIONS = regions;
           for (var i=0; i<regions.length; i++) {
             tabs.push( $(`<li class="nav-item"><a href="#region-${regions[i]}" id="tab-region-${regions[i]}" class="nav-link" data-toggle="pill" role="tab">${regions[i]}</a></li>`) );
-            tabPanes.push( $(`<div class="tab-pane show" id="region-${regions[i]}" role="tabpanel" aria-labelledby="tab-region-${regions[i]}"></div>`) )
+            tabPanes.push( $(`<div class="tab-pane show" id="region-${regions[i]}" role="tabpanel" aria-labelledby="tab-region-${regions[i]}"><span class="input-group-text bg-light">Resources filter</span><select id="filter-select-region-${regions[i]}" class="filter-select" size="3" multiple /></div>`) )
           }
           $('#aws-region-tabs').append(tabs);
           $('#aws-inventory').append(tabPanes);
           inventoryServices()
           $('#tab-region-'+regions[0]).tab('show');
+          $('.filter-select').on('change', filterResources).change();
         })
       }
 
@@ -2380,6 +2390,15 @@
         $('#aws-region-tabs').empty()
         $('#aws-inventory').empty()
       }
+
+      function filterResources() {
+	    $('.filter-select option').each(function() {
+		    $($(this).data("target")).hide();
+		});
+		$('.filter-select option:selected').each(function() {
+		    $($(this).data("target")).show();
+		});
+	  }
 
       $('#aws-credentials-verify').on('click', credentialsVerify);
       $('#aws-credentials-drop').on('click', credentialsDrop);
